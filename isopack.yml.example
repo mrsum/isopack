@@ -1,0 +1,30 @@
+name: 'project'
+version: '0.0.1'
+
+global:
+  alias:
+    _app: 'src/app'
+    _client: 'src/client'
+    _server: 'src/server'
+
+  output:
+    path: 'dist'
+    filename: '[name].[hash].js'
+
+development:
+  environment:
+    API_URL: 'http://localhost:3000'
+    REDIS_URL: 'http://localhost:9999'
+    NODE_ENV: 'development'
+    SERVER_PORT: 8888
+    CLIENT_PORT: 8889
+
+  server:
+    host: 'localhost'
+    entry: 'src/server.js'
+    webpack: 'config/webpack/server.config.js'
+
+  client:
+    host: 'localhost'
+    entry: 'src/client.js'
+    webpack: 'config/webpack/client.config.js'
