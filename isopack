@@ -1,0 +1,33 @@
+#!/usr/bin/env node
+
+const path = process.cwd()
+const args = process.argv
+
+const fs = require('fs')
+const yaml = require('js-yaml')
+const colors = require('colors');
+const { version } = require('./package.json')
+
+process.stdout.write(colors.green(`ISOPACK v${version} \n`))
+
+// check config file
+fs.exists(`${path}/isopack.yml`, exists => {
+  if (exists) {
+
+    // load isopack.yml
+    const config = yaml.safeLoad(
+      fs.readFileSync(`${path}/isopack.yml`, 'utf8')
+    )
+
+    // require and start isopack
+    require('./source/index.js')({
+      version,
+      config,
+      args,
+      path 
+    });
+
+  } else process.stderr.write(
+    colors.red(`ISOPACK: can't find isopack.config.js here '${path}'`)
+  )
+})
