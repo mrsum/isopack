@@ -5,10 +5,9 @@ const args = process.argv
 
 const fs = require('fs')
 const yaml = require('js-yaml')
-const colors = require('colors');
+const colors = require('colors')
+const debug = require('./source/utils/debug')
 const { version } = require('./package.json')
-
-process.stdout.write(colors.green(`ISOPACK v${version} \n`))
 
 // check config file
 fs.exists(`${path}/isopack.yml`, exists => {

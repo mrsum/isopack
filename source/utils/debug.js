@@ -1,39 +1,48 @@
-const util = require('util');
+const util = require('util')
 const colors = require('colors')
+const { Logger, transports } = require('winston')
 
-const inspect = msg => {
+const pad = s => (s < 10) ? '0' + s : s;
 
-  let message;
-
-  switch (typeof msg) {
-
-    case 'string':
-      message = msg
-    break
-
-    default:
-      message = util.inspect(msg, {
-        depth: 5,
-        showHidden: true,
-        colors: true
-      })
-  }
-
-  return message
+const loggerColors = {
+  info: 'yellow',
+  error: 'red',
+  warn: 'cyan'
 }
 
-module.exports = {
+module.exports = new Logger({
 
-  log: msg => process.stdout.write(
-    colors.green(
-      `\nISOPACK.log: \n${inspect(msg)}`
-    )
-  ),
+  transports: [
+    new (transports.Console)({
 
-  error: msg => process.stderr.write(
-    colors.red(
-      `\nISOPACK.error: \n${inspect(msg)}`
-    )
-  )
+      timestamp: () => {
+        const date = new Date();
+        return `${pad(date.getDate())}/${pad(date.getMonth()+1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+      },
 
-}
+      formatter: options => {
+        let message = [colors[loggerColors[options.level]](`  [${options.level.toUpperCase()}] ${options.timestamp()}`)]
+
+        // create human log
+        if (options.meta && Object.keys(options.meta).length) {
+          Object.keys(options.meta).forEach(item => {
+
+            switch (typeof options.meta[item]) {
+              case 'string': message.push(`    #${item} > ` + options.meta[item]); break;
+              default:
+                message.push(`    #${item} > ` + util.inspect(
+                  options.meta[item], { showHidden: true, depth: 5, colors: true })
+                )
+            }
+          })
+        }
+
+        message.push('')
+
+        return message.join('\n')
+      }
+
+    })
+  ]
+
+});

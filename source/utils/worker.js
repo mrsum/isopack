@@ -1,3 +1,4 @@
+const debug = require('./debug')
 const cluster = require('cluster')
 
 /**
@@ -8,14 +9,16 @@ const cluster = require('cluster')
 module.exports = (params = {}, cb) => {
   const { path, env, config } = params
 
-
-  // console.log(config.development.environment)
   let worker = cluster.fork(
-    Object.assign({}, { NODE_ENV: env, NODE_PATH: `${path}/node_modules` }, config.development.environment || {})
+    Object.assign(
+      {}, 
+      { NODE_ENV: env || {}, NODE_PATH: `${path}/node_modules` }, 
+      config.development.environment || {}
+    )
   ).on('online', cb)
 
   cluster.workers[worker.id].on('message', msg => {
-    console.log(msg)
+    debug.log(msg.type, msg.data)
   })
 
   return worker
