@@ -1,11 +1,13 @@
 
-const webpack   = require('webpack')
-const cluster   = require('cluster')
+const webpack = require('webpack')
+const cluster = require('cluster')
 
 const Compilers = {
   server: require('./compilers/server'),
   client: require('./compilers/client')
 }
+
+const helpers = require('./helpers/commands')
 
 /**
  * Params
@@ -14,8 +16,10 @@ const Compilers = {
  */
 module.exports = (params = {}, interfaces = {}) => {
   if (cluster.isMaster) {
-    const { config, path, env } = params; 
 
+    const { debug } = interfaces;
+    const { config, path, env } = params; 
+    
     if (config[env]) {
 
       const globalConfig = Object.assign(
@@ -23,6 +27,13 @@ module.exports = (params = {}, interfaces = {}) => {
         config.global, 
         config[env] || {}
       );
+
+      // set and parse aliases
+      Object.keys(globalConfig.alias || {}).forEach(key => {
+        globalConfig.alias[key] = `${path}/${globalConfig.alias[key]}`
+      })
+
+      helpers(params, interfaces)
 
       if (globalConfig.server && globalConfig.server.webpack) {
 

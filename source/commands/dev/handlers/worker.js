@@ -6,8 +6,6 @@
  * @return {[type]}            [description]
  */
 module.exports = (params, interfaces) => {
-  const { debug } = interfaces
-
   let sendMessage = function() {
     if (process.connected) {
       process.send({

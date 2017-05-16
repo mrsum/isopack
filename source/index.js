@@ -16,6 +16,7 @@ module.exports = params => {
   const { args } = params;
 
   switch(args[ args.length - 1 ]) {
+
     case 'dev':
       dev(
         Object.assign({}, { env: 'development' }, params),
@@ -31,6 +32,8 @@ module.exports = params => {
     break
 
     default:
-      debug.error(`No any task for ${args[ args.length - 1 ]} command`)
+      interfaces.debug.log('error', {
+        message: `No any task for ${args[ args.length - 1 ]} command`
+      })
   }
 }

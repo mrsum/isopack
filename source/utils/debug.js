@@ -7,11 +7,10 @@ const pad = s => (s < 10) ? '0' + s : s;
 const loggerColors = {
   info: 'yellow',
   error: 'red',
-  warn: 'cyan'
+  warn: 'magenta'
 }
 
 module.exports = new Logger({
-
   transports: [
     new (transports.Console)({
 
@@ -29,6 +28,7 @@ module.exports = new Logger({
 
             switch (typeof options.meta[item]) {
               case 'string': message.push(`    #${item} > ` + options.meta[item]); break;
+              case 'function': message.push(`    #${item} > ` + options.meta[item].toString()); break;
               default:
                 message.push(`    #${item} > ` + util.inspect(
                   options.meta[item], { showHidden: true, depth: 5, colors: true })
@@ -36,9 +36,6 @@ module.exports = new Logger({
             }
           })
         }
-
-        message.push('')
-
         return message.join('\n')
       }
 

@@ -6,13 +6,18 @@ const args = process.argv
 const fs = require('fs')
 const yaml = require('js-yaml')
 const colors = require('colors')
+const cluster = require('cluster')
+const Bluebird = require('bluebird')
+
 const debug = require('./source/utils/debug')
 const { version } = require('./package.json')
 
+global.Promise = Bluebird
+
 // check config file
 fs.exists(`${path}/isopack.yml`, exists => {
-  if (exists) {
 
+  if (exists) {
     // load isopack.yml
     const config = yaml.safeLoad(
       fs.readFileSync(`${path}/isopack.yml`, 'utf8')
