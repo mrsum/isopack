@@ -18,8 +18,8 @@ module.exports = (params = {}) => {
       )
     ).on('online', () => resolve(worker))
 
-    cluster.workers[worker.id].on('message', msg => {
-      debug.log(msg.type, msg.data)
+    cluster.workers[worker.id].on('message', ({ type, data }) => {
+      debug.log(type, data)
     })
   })
 }

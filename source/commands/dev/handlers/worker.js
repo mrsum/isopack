@@ -6,7 +6,8 @@
  * @return {[type]}            [description]
  */
 module.exports = (params, interfaces) => {
-  let sendMessage = function() {
+
+  let sendMessage = function (){
     if (process.connected) {
       process.send({
         type: this.type === 'log' ? 'info' : this.type,
@@ -17,14 +18,13 @@ module.exports = (params, interfaces) => {
 
   // error handling subscribe
   ['exit', 'error', 'warning', 'unhandledRejection', 'rejectionHandled', 'uncaughtException']
-  .forEach(type => {
-    process.on(type, data => {
-      sendMessage.bind({ type: 'error' })(data)
+    .forEach(type => {
+      process.on(type, data => {
+        sendMessage.bind({ type: 'error' })(data)
+      })
     })
-  })
 
   process.on('message', ({ name, sourceCode }) => {
-
     try {
       // depends
       let vm = require('vm');
@@ -33,7 +33,7 @@ module.exports = (params, interfaces) => {
 
       // prepare new script context for execution
       let script = new vm.Script(sourceCode, {
-        timeout: 300,
+        timeout: 10,
         filename: name,
         lineOffset: 5,
         columnOffset: 5,
@@ -54,9 +54,11 @@ module.exports = (params, interfaces) => {
 
       // run source code into new context
       script.runInNewContext({
-        module, console, global, require, logger,
-        process, __dirname, __filename,
-        setTimeout, setInterval, Error, Buffer
+        __dirname, __filename,
+        module, console, global, 
+        require, logger, process, 
+        setTimeout, setInterval,
+        Error, Buffer
       });
 
     } catch (err) {

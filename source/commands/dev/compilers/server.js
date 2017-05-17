@@ -2,7 +2,8 @@
 const colors   = require('colors')
 const webpack  = require('webpack')
 const MemoryFS = require('memory-fs')
-const ProgressPlugin = require('webpack/lib/ProgressPlugin')
+
+const progressBar = require('./middlewares/progressbar')
 
 /**
  * @param  {[type]} config [description]
@@ -11,40 +12,31 @@ const ProgressPlugin = require('webpack/lib/ProgressPlugin')
 module.exports = (config, params, interfaces) => {
 
   // get helpers interfaces
-  const { debug, worker } = interfaces
+  const { debug, worker, convert } = interfaces
 
   // create memory fs instance
   let mfs = new MemoryFS()
   let compiler = webpack(config)
-  let stream = process.stdout
 
   let workers = {
     main: false,  // current working process
     temp: false   // temporary process
   }
 
+  // create main worker
   worker(params || {})
-    .then( worker => {
-      workers.main = worker
-    })
+    .then( worker => workers.main = worker)
 
   // change filesystem to memory-fs
   compiler.outputFileSystem = mfs
 
-  compiler.apply(new ProgressPlugin((percentage, msg) => {
-    let percents = Math.round(percentage * 100, 10)
-    if (stream.isTTY && percentage < 1) {
-      stream.cursorTo(0)
-      stream.write(colors.green(`[SERVER]: [${msg} (${percents}%)]`))
-      stream.clearLine(1)
-    } else if (percentage === 1) {
-      stream.cursorTo(0)
-      stream.clearLine(0)
-    }
-  }))
+  progressBar(compiler)
 
   // run compiler in watch mode
   compiler.watch({ poll: true }, (err, statistic) => {
+
+    // console.log(statistic.toJson())
+    // get info from statistic
     const { errors, warnings, hash, time, assets } = statistic.toJson()
 
     // define stacktrice error array
@@ -77,6 +69,7 @@ module.exports = (config, params, interfaces) => {
 
         let sourceCode = statistic.compilation.assets[asset.name].source()
 
+        // process swap magic
         if (workers.temp) {
           workers.main.kill('SIGTERM')
           workers.main.disconnect()
@@ -88,13 +81,12 @@ module.exports = (config, params, interfaces) => {
           // send source code to main worker
 
           workers.main.send({ name: asset.name, sourceCode }, () => {
-            process.stdout.write(colors.green(`\n[SERVER] [${asset.name}]\n`))
 
-            // and create temporary worker 
+            process.stdout.write(colors.green(`\n[SERVER] [${asset.name}] ~ ${convert(asset.size)}\n`))
+
+            // and create temporary worker after compiling
             worker(params || {})
-              .then( worker => {
-                workers.temp = worker
-              })
+              .then(worker => workers.temp = worker)
 
           })
         }

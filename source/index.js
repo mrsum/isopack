@@ -2,10 +2,11 @@
 const dev = require('./commands/dev')
 const build = require('./commands/build')
 
-// 
+
 const interfaces = {
   debug: require('./utils/debug'),
-  worker: require('./utils/worker')
+  worker: require('./utils/worker'),
+  convert: require('./utils/convert')
 }
 
 /**
@@ -13,10 +14,12 @@ const interfaces = {
  * @return {[type]}        [description]
  */
 module.exports = params => {
+
   const { args } = params;
 
-  switch(args[ args.length - 1 ]) {
+  const task = args[args.length -1] || 'build';
 
+  switch(task) {
     case 'dev':
       dev(
         Object.assign({}, { env: 'development' }, params),
@@ -36,4 +39,5 @@ module.exports = params => {
         message: `No any task for ${args[ args.length - 1 ]} command`
       })
   }
+
 }

@@ -1,4 +1,4 @@
-
+// Depends
 const webpack = require('webpack')
 const cluster = require('cluster')
 
@@ -46,6 +46,16 @@ module.exports = (params = {}, interfaces = {}) => {
         )
 
       }
+
+      // if (globalConfig.client && globalConfig.client.webpack) {
+      //   Compilers.client(
+      //     require(`${path}/${globalConfig.client.webpack}`)(
+      //       webpack, globalConfig
+      //     ),
+      //     params,
+      //     interfaces
+      //   )
+      // }
 
     }
 
