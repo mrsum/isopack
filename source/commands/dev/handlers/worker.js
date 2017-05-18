@@ -1,3 +1,11 @@
+let sendMessage = function (){
+  if (process.connected) {
+    process.send({
+      type: this.type ? this.type : 'log',
+      data: arguments
+    });
+  }
+};
 
 /**
  * Worker handler
@@ -5,16 +13,7 @@
  * @param  {[type]} interfaces [description]
  * @return {[type]}            [description]
  */
-module.exports = (params, interfaces) => {
-
-  let sendMessage = function (){
-    if (process.connected) {
-      process.send({
-        type: this.type === 'log' ? 'info' : this.type,
-        data: arguments
-      });
-    }
-  };
+module.exports = () => {
 
   // error handling subscribe
   ['exit', 'error', 'warning', 'unhandledRejection', 'rejectionHandled', 'uncaughtException']
@@ -29,11 +28,10 @@ module.exports = (params, interfaces) => {
       // depends
       let vm = require('vm');
       let console = {};
-      let logger = {};
 
       // prepare new script context for execution
       let script = new vm.Script(sourceCode, {
-        timeout: 10,
+        timeout: 200,
         filename: name,
         lineOffset: 5,
         columnOffset: 5,
@@ -56,7 +54,7 @@ module.exports = (params, interfaces) => {
       script.runInNewContext({
         __dirname, __filename,
         module, console, global, 
-        require, logger, process, 
+        require, process, 
         setTimeout, setInterval,
         Error, Buffer
       });

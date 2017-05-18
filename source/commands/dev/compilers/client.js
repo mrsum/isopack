@@ -1,8 +1,3 @@
-const webpack  = require('webpack')
+module.exports = ({ webpack, events, config }) => {
 
-module.exports = (config, params, interfaces) => {
-
-  const { debug, worker } = interfaces
-
-  // console.log(config)
 }

@@ -9,27 +9,23 @@ const colors = require('colors')
 const cluster = require('cluster')
 const Bluebird = require('bluebird')
 
-const debug = require('./source/utils/debug')
 const { version } = require('./package.json')
 
+// define global Promise as Bluebird
 global.Promise = Bluebird
 
 // check config file
 fs.exists(`${path}/isopack.yml`, exists => {
 
   if (exists) {
+
     // load isopack.yml
     const config = yaml.safeLoad(
       fs.readFileSync(`${path}/isopack.yml`, 'utf8')
     )
 
-    // require and start isopack
-    require('./source/index.js')({
-      version,
-      config,
-      args,
-      path 
-    });
+    // require and execute
+    require('./source/index')({ config, version, args, path })
 
   } else process.stderr.write(
     colors.red(`ISOPACK: can't find isopack.config.js here '${path}'`)

@@ -1,41 +1,44 @@
 
-const colors   = require('colors')
-const webpack  = require('webpack')
 const MemoryFS = require('memory-fs')
+const ProgressPlugin = require('webpack/lib/ProgressPlugin')
+const createWorker = require('../process/create')
 
-const progressBar = require('./middlewares/progressbar')
+module.exports = ({ webpack, events, config }) => {
+  
+  const { environments, output, server, path, env } = config
 
-/**
- * @param  {[type]} config [description]
- * @return {[type]}        [description]
- */
-module.exports = (config, params, interfaces) => {
-
-  // get helpers interfaces
-  const { debug, worker, convert } = interfaces
-
-  // create memory fs instance
-  let mfs = new MemoryFS()
-  let compiler = webpack(config)
+  // get webpack config
+  const webpackConfig = require(`${path}/${server.webpack}`)(
+    webpack,
+    config
+  )
 
   let workers = {
-    main: false,  // current working process
-    temp: false   // temporary process
+    main: false,
+    temp: false
   }
 
-  // create main worker
-  worker(params || {})
-    .then( worker => workers.main = worker)
+  let mfs = new MemoryFS()
+  let compiler = webpack(webpackConfig)
 
   // change filesystem to memory-fs
   compiler.outputFileSystem = mfs
 
-  progressBar(compiler)
+  // apply progress plugin
+  compiler.apply(
+    new ProgressPlugin(
+      (percentage, msg) => events.emit('progress', {
+        percentage, msg, type: '[SERVER]:'
+      })
+    )
+  )
 
-  // run compiler in watch mode
+  // create main worker
+  createWorker(events, config || {})
+    .then( worker => workers.main = worker)
+
   compiler.watch({ poll: true }, (err, statistic) => {
 
-    // console.log(statistic.toJson())
     // get info from statistic
     const { errors, warnings, hash, time, assets } = statistic.toJson()
 
@@ -59,15 +62,18 @@ module.exports = (config, params, interfaces) => {
     // if stacktrace isn't empty show errors
     if (stacktrace.length > 0) {
       return stacktrace.map(note => {
-        debug.log('error', note)
+        events.emit('error', note)
       })
     }
 
     assets.map(asset => {
-
-      if (mfs.statSync(`${config.output.path}/${asset.name}`).isFile()) {
-
+      if (mfs.statSync(`${webpackConfig.output.path}/${asset.name}`).isFile()) {
         let sourceCode = statistic.compilation.assets[asset.name].source()
+
+        events.emit('status', {
+          type: 'server',
+          msg: `${asset.name}`
+        })
 
         // process swap magic
         if (workers.temp) {
@@ -79,19 +85,14 @@ module.exports = (config, params, interfaces) => {
 
         if (workers.main && workers.main.isConnected()) {
           // send source code to main worker
-
           workers.main.send({ name: asset.name, sourceCode }, () => {
-
-            process.stdout.write(colors.green(`\n[SERVER] [${asset.name}] ~ ${convert(asset.size)}\n`))
-
             // and create temporary worker after compiling
-            worker(params || {})
+            createWorker(events, config || {})
               .then(worker => workers.temp = worker)
-
           })
         }
       }
-    })
 
+    })
   })
 }

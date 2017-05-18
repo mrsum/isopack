@@ -1,6 +1,6 @@
 {
   "name": "isopack",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "",
   "main": "source/index.js",
   "bin": {
@@ -12,7 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bluebird": "^3.5.0",
+    "bluebird": "3.5.0",
     "colors": "1.1.2",
     "js-yaml": "3.8.4",
     "memory-fs": "0.4.1",

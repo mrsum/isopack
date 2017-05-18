@@ -1,43 +1,52 @@
-// Commands
-const dev = require('./commands/dev')
-const build = require('./commands/build')
 
-
-const interfaces = {
-  debug: require('./utils/debug'),
-  worker: require('./utils/worker'),
-  convert: require('./utils/convert')
+const EventEmmiter = require('events')
+const Commands = {
+  development: require('./commands/dev'),
+  production: require('./commands/build'),
 }
 
-/**
- * @param  {[type]} params [description]
- * @return {[type]}        [description]
- */
-module.exports = params => {
+const eventHandlers = [
+  require('./handlers/error'),
+  require('./handlers/status'),
+  require('./handlers/message'),
+  require('./handlers/progressServer'),
+  require('./handlers/progressClient'),
+]
 
-  const { args } = params;
+module.exports = ({ config, version, args, path }) => {
 
-  const task = args[args.length -1] || 'build';
+  const { main, server, client } = config
 
-  switch(task) {
-    case 'dev':
-      dev(
-        Object.assign({}, { env: 'development' }, params),
-        interfaces
-      )
-    break
+  // prepare aliases paths
+  Object.keys(main.alias).forEach(key => {
+    main.alias[key] = `${path}/${main.alias[key]}`
+  })
 
-    case 'build':
-      build(
-        Object.assign({}, { env: 'production' }, params),
-        interfaces
-      )
-    break
+  // 
+  const shortEnv = args[args.length -1] || 'build'
 
-    default:
-      interfaces.debug.log('error', {
-        message: `No any task for ${args[ args.length - 1 ]} command`
-      })
+  // 
+  const env = shortEnv === 'dev'
+    ? 'development'
+    : 'production'
+
+  // 
+  const optionsByEnv = Object.assign(
+    { env, path },
+    config[env] || {},
+    main || {}
+  )
+
+  // 
+  try {
+    let events = new EventEmmiter()
+    // register handlers
+    eventHandlers.forEach(handler => handler(events))
+
+    // start command
+    Commands[env](events, optionsByEnv)
+
+  } catch (err) {
+    throw new Error(err)
   }
-
 }

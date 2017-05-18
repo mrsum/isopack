@@ -4,7 +4,6 @@ version: '0.0.1'
 global:
   alias:
     _app: 'src/app'
-    _client: 'src/client'
     _server: 'src/server'
 
   output:
@@ -13,15 +12,15 @@ global:
 
 development:
   environment:
-    API_URL: 'http://localhost:3000'
-    REDIS_URL: 'http://localhost:9999'
+    ENV: 'server'
+    API_URL: 'http://localhost:3001'
     NODE_ENV: 'development'
     SERVER_PORT: 8888
     CLIENT_PORT: 8889
 
   server:
     host: 'localhost'
-    entry: 'src/server.js'
+    entry: 'src/server/index.js'
     webpack: 'config/webpack/server.config.js'
 
   client:
