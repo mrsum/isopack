@@ -31,7 +31,7 @@ module.exports = () => {
 
       // prepare new script context for execution
       let script = new vm.Script(sourceCode, {
-        timeout: 200,
+        timeout: 20,
         filename: name,
         lineOffset: 5,
         columnOffset: 5,
@@ -40,9 +40,7 @@ module.exports = () => {
 
       // override console context
       ['log', 'dir', 'warn', 'info', 'error']
-        .forEach(type => {
-          console[type] = sendMessage.bind({ type });
-        });
+        .forEach(type => console[type] = sendMessage.bind({ type }));
 
       // override stdout functions
       process.stdout.write = sendMessage.bind({ type: 'log' });

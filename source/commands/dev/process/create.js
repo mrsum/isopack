@@ -1,3 +1,4 @@
+// Depends
 const cluster = require('cluster')
 
 /**
@@ -8,12 +9,14 @@ const cluster = require('cluster')
 module.exports = (events, { path, env, environments }) => {
   return new Promise((resolve, reject) => {
 
+    // merge ENV from .isopack.yml
     const processEnvironments = Object.assign(
-      {},
+      { BROWSER: false },
       { NODE_ENV: env || {}, NODE_PATH: `${path}/node_modules` }, 
       environments || {}
     )
 
+    // create new one process
     let worker = cluster
       .fork(processEnvironments)
       .on('online', () => resolve(worker))
