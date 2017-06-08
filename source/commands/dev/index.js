@@ -1,6 +1,13 @@
 
 const cluster = require('cluster')
-const webpack = require('webpack')
+const ManifestPlugin = require('webpack-assets-manifest')
+const ExtractTextPlugin = require("extract-text-webpack-plugin")
+
+let webpack = require('webpack')
+
+// add new plugins
+webpack.ManifestPlugin = ManifestPlugin
+webpack.ExtractTextPlugin = ExtractTextPlugin
 
 /**
  * @param  {[type]} events [description]
@@ -12,16 +19,16 @@ module.exports = (events, config) => {
   if (cluster.isMaster) {
     const { server, client } = config
 
-    if (server) {
-      require('./compilers/server')({
+    if (client) {
+      require('./compilers/client')({
         webpack,
         events,
         config
       })
     }
 
-    if (client) {
-      require('./compilers/client')({
+    if (server) {
+      require('./compilers/server')({
         webpack,
         events,
         config

@@ -28,7 +28,7 @@ module.exports = ({ webpack, events, config }) => {
   compiler.apply(
     new ProgressPlugin(
       (percentage, msg) => events.emit('progress', {
-        percentage, msg, type: '[SERVER]:'
+        percentage, msg, type: 'server'
       })
     )
   )

@@ -7,5 +7,5 @@ const colors = require('colors')
  * @return {[type]}        [description]
  */
 module.exports = events => events.on('error', error => {
-  process.stdout.write(`${colors.red('[ERROR]:')} ${error}`)
+  process.stdout.write(`\n${colors.red('[ERROR]:')} ${error}`)
 })

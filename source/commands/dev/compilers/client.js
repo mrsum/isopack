@@ -1,5 +1,4 @@
 
-
 const DevServer = require('webpack-dev-server');
 const ProgressPlugin = require('webpack/lib/ProgressPlugin')
 
@@ -20,32 +19,58 @@ module.exports = ({ webpack, events, config }) => {
     config
   )
 
-  // create compiler
   const compiler = webpack(webpackConfig);
 
   // apply progress plugin
   compiler.apply(
     new ProgressPlugin(
       (percentage, msg) => events.emit('progress', {
-        percentage, msg, type: '[CLIENT]:'
+        percentage, msg, type: 'client'
       })
     )
   )
 
   // create new dev server
   let server = new DevServer(compiler, {
-    contentBase: '/',
+    contentBase: path,
     inline: true,
     quiet: true
   })
 
-  compiler.plugin('done', stats => {
-    let statistic = stats.toJson()
+  compiler.plugin('done', statistic => {
 
-    // console.log(statistic)
+    // get info from statistic
+    const { errors, warnings, hash, time, assets } = statistic.toJson()
 
-    // console.log(statistic)
+    // define stacktrice error array
+    let stacktrace = []
+
+    // check errors
+    if (statistic.hasErrors()) {
+      stacktrace.push(
+        errors.map(error => error)
+      )
+    }
+
+    // check warnings
+    if (statistic.hasWarnings()) {
+      stacktrace.push(
+        warnings.map(warning => warning)
+      )
+    }
+
+    // if stacktrace isn't empty show errors
+    if (stacktrace.length > 0) {
+      return stacktrace.map(note => {
+        events.emit('error', note)
+      })
+    }
+
+    events.emit('status', {
+      type: 'client',
+      msg: assets.map(asset => asset.name).join('\n')
+    })
   })
 
-  server.listen('8090', 'localhost');
+  server.listen(environments.CLIENT_PORT || 8090, 'localhost');
 }

@@ -12,6 +12,13 @@ const eventHandlers = [
   require('./handlers/progress'),
 ]
 
+/**
+ * @param  {[type]} options.config  [description]
+ * @param  {[type]} options.version [description]
+ * @param  {[type]} options.args    [description]
+ * @param  {[type]} options.path    [description]
+ * @return {[type]}                 [description]
+ */
 module.exports = ({ config, version, args, path }) => {
 
   const { main, server, client } = config
@@ -41,10 +48,8 @@ module.exports = ({ config, version, args, path }) => {
     let events = new EventEmmiter()
     // register handlers
     eventHandlers.forEach(handler => handler(events))
-
     // start command
     Commands[env](events, optionsByEnv)
-
   } catch (err) {
     throw new Error(err)
   }

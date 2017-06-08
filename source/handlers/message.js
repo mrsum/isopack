@@ -1,6 +1,7 @@
 // Depends
 const util = require('util')
 const colors = require('colors')
+const stream = process.stdout.isTTY
 
 const schema = {
   log: 'yellow',
@@ -51,8 +52,13 @@ module.exports = events => events.on('message', ({ type, data }) => {
       template = `    #ERROR > Can't parsing argument`
   }
 
-  process.stdout.write('\n')
+  if (stream.isTTY) {
+    stream.cursorTo(0)
+    stream.clearLine(0)
+    stream.clearLine(1)
+    stream.clearLine(2)
+  }
+
   process.stdout.write(colors[schema[type]](`  [${type.toUpperCase()}]: \n`))
   process.stdout.write(template.join('\n'))
-  process.stdout.write('\n')
 })
