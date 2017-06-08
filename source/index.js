@@ -9,8 +9,7 @@ const eventHandlers = [
   require('./handlers/error'),
   require('./handlers/status'),
   require('./handlers/message'),
-  require('./handlers/progressServer'),
-  require('./handlers/progressClient'),
+  require('./handlers/progress'),
 ]
 
 module.exports = ({ config, version, args, path }) => {

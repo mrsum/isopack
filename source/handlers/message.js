@@ -4,9 +4,9 @@ const colors = require('colors')
 
 const schema = {
   log: 'yellow',
+  dir: 'yellow',
   warn: 'cyan',
   error: 'red',
-  dir: 'yellow'
 }
 
 const pad = s => (s < 10) 
@@ -51,6 +51,7 @@ module.exports = events => events.on('message', ({ type, data }) => {
       template = `    #ERROR > Can't parsing argument`
   }
 
+  process.stdout.write('\n')
   process.stdout.write(colors[schema[type]](`  [${type.toUpperCase()}]: \n`))
   process.stdout.write(template.join('\n'))
   process.stdout.write('\n')
