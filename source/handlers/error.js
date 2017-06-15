@@ -1,5 +1,6 @@
 // Depends
 const colors = require('colors')
+const stream = process.stdout
 
 /**
  * System message handler
@@ -7,5 +8,5 @@ const colors = require('colors')
  * @return {[type]}        [description]
  */
 module.exports = events => events.on('error', error => {
-  process.stdout.write(`\n${colors.red('[ERROR]:')} ${error}`)
+  stream.write(`${colors.red('[ERROR]:')} ${error}`)
 })

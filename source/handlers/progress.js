@@ -1,8 +1,8 @@
 // require the library 
+const stream = process.stdout
 const colors = require('colors')
 const Multiprogress = require('multi-progress')
 const multi = new Multiprogress(process.stdout)
-const stream = process.stdout.isTTY
 
 // local variables
 const bars = {}
@@ -36,28 +36,25 @@ module.exports = events => events.on('progress', ({ percentage, msg, type }) => 
 
   const percents = Math.round(percentage * 100, 10)
 
+  // create new one bar
   if (percentage === 0 && !bars[type]) {
     createBar(type)
   }
 
+  // if bar was created
   if(percentage === 0 && bars[type].instance) {
     bars[type].value = 0
     bars[type].instance.update(0)
   }
 
+  // any cases
   if (bars[type]) {
     bars[type].instance.tick(percents - bars[type].value)
     bars[type].value = percents
   }
 
+  // done
   if (percentage === 100) {
     bars[type].instance.terminate()
-
-    if (stream.isTTY) {
-      stream.cursorTo(0)
-      stream.clearLine(0)
-      stream.clearLine(1)
-      stream.clearLine(2)
-    }
   }
 })

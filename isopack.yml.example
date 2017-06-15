@@ -1,19 +1,22 @@
-name: 'project'
+name: 'Project'
 version: '0.0.1'
 
-global:
+main:
   alias:
     _app: 'src/app'
     _server: 'src/server'
+    _components: 'src/app/components'
+  
+  manifest: src/server/manifest/manifest.json
 
   output:
     path: 'dist'
     filename: '[name].[hash].js'
 
 development:
-  environment:
-    ENV: 'server'
+  environments:
     API_URL: 'http://localhost:3001'
+    REDIS_URL: 'http://localhost:9999'
     NODE_ENV: 'development'
     SERVER_PORT: 8888
     CLIENT_PORT: 8889
@@ -21,9 +24,29 @@ development:
   server:
     host: 'localhost'
     entry: 'src/server/index.js'
-    webpack: 'config/webpack/server.config.js'
+    webpack: 'config/webpack/development/server.config.js'
 
   client:
     host: 'localhost'
-    entry: 'src/client.js'
-    webpack: 'config/webpack/client.config.js'
+    entry: 'src/app/app.js'
+    webpack: 'config/webpack/development/client.config.js'
+
+production:
+  environments:
+    API_URL: 'http://localhost:3001'
+    REDIS_URL: 'http://localhost:9999'
+    NODE_ENV: 'production'
+    SERVER_PORT: 8888
+    CLIENT_PORT: 8889
+
+  server:
+    host: 'localhost'
+    entry: 'src/server/index.js'
+    webpack: 'config/webpack/production/server.config.js'
+    output:
+      filename: '[name].js'
+
+  client:
+    host: 'localhost'
+    entry: 'src/app/app.js'
+    webpack: 'config/webpack/production/client.config.js'

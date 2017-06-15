@@ -1,18 +1,7 @@
 // Depends
 const util = require('util')
 const colors = require('colors')
-const stream = process.stdout.isTTY
-
-const schema = {
-  log: 'yellow',
-  dir: 'yellow',
-  warn: 'cyan',
-  error: 'red',
-}
-
-const pad = s => (s < 10) 
-  ? '0' + s
-  : s;
+const stream = process.stdout
 
 const loggerColors = {
   info: 'yellow',
@@ -20,8 +9,12 @@ const loggerColors = {
   warn: 'magenta'
 }
 
-const now = date => {
-  return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+const schema = {
+  log: 'yellow',
+  dir: 'yellow',
+  info: 'yellow',
+  warn: 'cyan',
+  error: 'red',
 }
 
 /**
@@ -38,27 +31,28 @@ module.exports = events => events.on('message', ({ type, data }) => {
       template.push(data)
     break
 
+    case 'function': 
+      template.push(data.toString())
+    break
+
     case 'object':
       Object.keys(data).map(item => {
         let body = util.inspect(
           data[item], { showHidden: true, depth: 10, colors: true }
         )
 
-        template.push(`    #${item} > ${body}`)
+        template.push(body + ', ')
       })
     break
 
     default: 
-      template = `    #ERROR > Can't parsing argument`
+      template = `#ERROR > Can't parsing argument`
   }
 
-  if (stream.isTTY) {
-    stream.cursorTo(0)
-    stream.clearLine(0)
-    stream.clearLine(1)
-    stream.clearLine(2)
-  }
-
-  process.stdout.write(colors[schema[type]](`  [${type.toUpperCase()}]: \n`))
-  process.stdout.write(template.join('\n'))
+  stream.write('  ' + colors[schema[type]](`[${type.toUpperCase()}]: `))
+  template.forEach((item, key) => {
+    stream.write(item)
+  })
+  
+  stream.write('\n')
 })
