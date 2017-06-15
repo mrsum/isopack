@@ -7,7 +7,7 @@ npm i isopack --save-dev
 yarn add isopack --dev
 ```
 
-Copy [iospack.yml.example](https://github.com/mrsum/isopack/blob/master/isopack.yml.example) to isopack.yml
+Copy [isopack.yml.example](https://github.com/mrsum/isopack/blob/master/isopack.yml.example) to isopack.yml
 
 
 #### package.json
