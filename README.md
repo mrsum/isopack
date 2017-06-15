@@ -22,14 +22,13 @@ Copy [iospack.yml.example](https://github.com/mrsum/isopack/blob/master/isopack.
 ```
 
 #### Development
-```
+```bash
 npm run dev
-```g
+```
 
 #### Building
-```
+```bash
 npm run build
 ```
-
 
 (C) [Mike Chernobrov](https://github.com/mrsum/)
