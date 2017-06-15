@@ -25,7 +25,7 @@ module.exports = ({ webpack, events, config }) => {
   )
 
   compiler.run((err, stat) => {
-    
+
   })
 
 }
