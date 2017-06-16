@@ -6,8 +6,8 @@ const cluster = require('cluster')
  * @param  {Function} cb   [description]
  * @return {[type]}        [description]
  */
-module.exports = (events, { path, env, environments }) => {
-  return new Promise((resolve, reject) => {
+module.exports = (events, { path, env, environments }) =>
+  new Promise((resolve, reject) => {
 
     // merge ENV from .isopack.yml
     const processEnvironments = Object.assign(
@@ -27,5 +27,3 @@ module.exports = (events, { path, env, environments }) => {
       .on('message', data => events.emit('message', data))
 
   })
-
-}

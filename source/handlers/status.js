@@ -17,5 +17,5 @@ const schema = {
 module.exports = events => events.on('status', ({ type, msg }) => {
   stream.cursorTo(0)
   stream.clearLine(0)
-  stream.write(`${colors.green('[' + type.toUpperCase() + ']:')} ${msg}\n`)
+  stream.write(`${colors.green('[' + type.toUpperCase() + ']:')} \n${msg}\n`)
 })

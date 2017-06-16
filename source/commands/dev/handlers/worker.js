@@ -1,8 +1,14 @@
+
+/**
+ * Send message to master process
+ * @return {[type]} [description]
+ */
 let sendMessage = function (){
   if (process.connected) {
     process.send({
       type: this.type ? this.type : 'log',
-      data: arguments
+      // will return as array
+      data: Object.keys(arguments).map(item => arguments[item])
     });
   }
 };
@@ -28,6 +34,8 @@ module.exports = () => {
       // depends
       let vm = require('vm');
       let console = {};
+      let document = {};
+      let window = {};
 
       // prepare new script context for execution
       let script = new vm.Script(sourceCode, {
@@ -54,7 +62,7 @@ module.exports = () => {
         module, console, global, 
         require, process, 
         setTimeout, setInterval,
-        Error, Buffer
+        Error, Buffer, window, document
       });
 
     } catch (err) {

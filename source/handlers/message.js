@@ -22,37 +22,35 @@ const schema = {
  * @param  {[type]} events [description]
  * @return {[type]}        [description]
  */
-module.exports = events => events.on('message', ({ type, data }) => {
+module.exports = events => events.on('message', ({ type = 'log', data = []}) => {
+
   let template = []
 
-  switch (typeof data) {
+  data.map(message => {
+    switch(Object.prototype.toString.call(message)) {
 
-    case 'string': 
-      template.push(data)
-    break
+      case '[object Array]':
+      case '[object Number]':
+      case '[object Boolean]':
+        template.push(util.inspect(message) + ', ')
+      break
 
-    case 'function': 
-      template.push(data.toString())
-    break
+      case '[object String]':
+        template.push(message + ', ')
+      break
 
-    case 'object':
-      Object.keys(data).map(item => {
-        let body = util.inspect(
-          data[item], { showHidden: true, depth: 10, colors: true }
+      case '[object Object]':
+        template.push(
+          util.inspect(message, { showHidden: true, depth: 10, colors: true }) + ', '
         )
+      break
+      default:
+        template.push('NOF' + ', ')
 
-        template.push(body + ', ')
-      })
-    break
-
-    default: 
-      template = `#ERROR > Can't parsing argument`
-  }
+    }
+  })
 
   stream.write('  ' + colors[schema[type]](`[${type.toUpperCase()}]: `))
-  template.forEach((item, key) => {
-    stream.write(item)
-  })
-  
+  template.forEach((item, key) => stream.write(item))
   stream.write('\n')
 })
