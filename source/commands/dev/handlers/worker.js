@@ -34,8 +34,6 @@ module.exports = () => {
       // depends
       let vm = require('vm');
       let console = {};
-      let document = {};
-      let window = {};
 
       // prepare new script context for execution
       let script = new vm.Script(sourceCode, {
@@ -62,7 +60,7 @@ module.exports = () => {
         module, console, global, 
         require, process, 
         setTimeout, setInterval,
-        Error, Buffer, window, document
+        Error, Buffer
       });
 
     } catch (err) {
