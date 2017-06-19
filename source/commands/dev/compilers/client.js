@@ -32,9 +32,9 @@ module.exports = ({ webpack, events, config }) => {
 
   // create new dev server
   let server = new DevServer(compiler, {
-    contentBase: path,
+    contentBase: webpackConfig.output.publicPath || path,
     inline: true,
-    quiet: true
+    quiet: true,
   })
 
   compiler.plugin('done', statistic => {
