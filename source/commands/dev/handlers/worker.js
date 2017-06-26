@@ -37,7 +37,7 @@ module.exports = () => {
 
       // prepare new script context for execution
       let script = new vm.Script(sourceCode, {
-        timeout: 20,
+        timeout: 200,
         filename: name,
         lineOffset: 5,
         columnOffset: 5,

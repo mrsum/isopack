@@ -91,8 +91,9 @@ module.exports = ({ webpack, events, config }) => {
               .then(worker => workers.temp = worker)
           })
         }
-      }
 
+
+      }
     })
   })
 }

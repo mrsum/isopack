@@ -1,4 +1,4 @@
-
+const util = require('util')
 const MemoryFS = require('memory-fs')
 const ProgressPlugin = require('webpack/lib/ProgressPlugin')
 
@@ -25,6 +25,21 @@ module.exports = ({ webpack, events, config }) => {
   )
 
   compiler.run((err, stat) => {
+
+    const { errors, warnings, hash, time, assets } = stat.toJson()
+
+    if (err) {
+      process.stdout.write(
+        util.inspect(err, { showHidden: true, depth: 10, colors: true })
+      )
+    }
+
+    const files = assets.map(asset => `${asset.name} (${asset.size})`)
+
+    events.emit('status', {
+      type: 'client',
+      msg: files.join('\n')
+    })
 
   })
 
