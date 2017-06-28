@@ -9,7 +9,7 @@ const ProgressPlugin = require('webpack/lib/ProgressPlugin')
  * @param  {[type]} options.config  [description]
  * @return {[type]}                 [description]
  */
-module.exports = ({ webpack, events, config }) => {
+module.exports = ({ webpack, config }) => {
   // 
   const { environments, output, client, path, env } = config
 
@@ -23,10 +23,15 @@ module.exports = ({ webpack, events, config }) => {
 
   // apply progress plugin
   compiler.apply(
-    new ProgressPlugin(
-      (percentage, msg) => events.emit('progress', {
-        percentage, msg, type: 'client'
-      })
+    new ProgressPlugin((percentage, msg) =>
+      process.send(
+        {
+          side: 'client',
+          type: 'progress',
+          percentage,
+          msg
+        }
+      )
     )
   )
 
@@ -35,6 +40,7 @@ module.exports = ({ webpack, events, config }) => {
     contentBase: webpackConfig.output.publicPath || path,
     inline: true,
     quiet: true,
+    hot: true,
   })
 
   compiler.plugin('done', statistic => {
@@ -61,15 +67,19 @@ module.exports = ({ webpack, events, config }) => {
 
     // if stacktrace isn't empty show errors
     if (stacktrace.length > 0) {
-      return stacktrace.map(note => {
-        events.emit('error', note)
+      return process.send({
+        side: 'client',
+        type: 'error',
+        note: stacktrace[0]
       })
     }
 
-    events.emit('status', {
-      type: 'client',
+    process.send({
+      side: 'client',
+      type: 'status',
       msg: assets.map(asset => asset.name).join('\n')
     })
+
   })
 
   server.listen(environments.CLIENT_PORT || 8090, 'localhost');

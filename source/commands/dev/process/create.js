@@ -6,12 +6,12 @@ const cluster = require('cluster')
  * @param  {Function} cb   [description]
  * @return {[type]}        [description]
  */
-module.exports = (events, { path, env, environments }) =>
+module.exports = (events, { path, env, environments, code }) =>
   new Promise((resolve, reject) => {
 
     // merge ENV from .isopack.yml
     const processEnvironments = Object.assign(
-      { BROWSER: false },
+      { BROWSER: false, __name: 'server-worker', __code: code },
       { NODE_ENV: env || {}, NODE_PATH: `${path}/node_modules` }, 
       environments || {}
     )

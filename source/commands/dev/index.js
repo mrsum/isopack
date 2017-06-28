@@ -16,27 +16,48 @@ webpack.ExtractTextPlugin = ExtractTextPlugin
  * @return {void}
  */
 module.exports = (events, config) => {
-  // check cluster
-  if (cluster.isMaster) {
-    const { server, client } = config
 
-    if (client) {
-      require('./compilers/client')({
-        webpack,
-        events,
-        config
-      })
+  const { server, client } = config
+
+  if (cluster.isMaster) {
+
+    // if server part of config is isset
+    if (server) {
+      // create process for server webpack
+      cluster
+        .fork({ __name: 'webpack-server' })
+        .on('message', message =>
+          events.emit(message.type, message)
+        )
     }
 
-    if (server) {
-      require('./compilers/server')({
-        webpack,
-        events,
-        config
-      })
+    // if server part of config is isset
+    if (client) {
+      // create process for client webpack
+      cluster
+        .fork({ __name: 'webpack-client' })  
+        .on('message', message =>
+          events.emit(message.type, message)
+        )
     }
 
   } else {
-    require('./handlers/worker')()
+    const { __name } = process.env
+    switch(__name) {
+
+      case 'webpack-client':
+        require('./compilers/client')({ webpack, config })
+      break
+
+      case 'webpack-server':
+        require('./compilers/server')({ webpack, config })
+      break
+
+      case 'server-worker':
+        require('./handlers/worker')()
+      break
+
+    }
   }
+
 }

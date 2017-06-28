@@ -8,7 +8,10 @@ const stream = process.stdout
  * @return {[type]}        [description]
  */
 module.exports = events => events.on('error', error => {
+
+  const { note, side } = error
+
   stream.write('\n')
-  stream.write(colors.red('[ERROR]:') + error)
+  stream.write(colors.red(`[${side.toUpperCase()}]:`) + note)
   stream.write('\n')
 })

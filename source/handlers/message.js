@@ -50,6 +50,8 @@ module.exports = events => events.on('message', ({ type = 'log', data = []}) => 
     }
   })
 
+
+  stream.write('\n')
   stream.write('  ' + colors[schema[type]](`[${type.toUpperCase()}]: `))
   template.forEach((item, key) => stream.write(item))
   stream.write('\n')

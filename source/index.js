@@ -1,15 +1,21 @@
 
+// Depends
+const cluster = require('cluster')
 const EventEmmiter = require('events')
+
+// All commands
 const Commands = {
   development: require('./commands/dev'),
   production: require('./commands/build'),
 }
 
+// Handlers
 const eventHandlers = [
   require('./handlers/error'),
   require('./handlers/status'),
   require('./handlers/message'),
   require('./handlers/progress'),
+  require('./handlers/worker')
 ]
 
 /**

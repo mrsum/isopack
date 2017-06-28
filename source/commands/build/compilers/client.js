@@ -2,7 +2,7 @@ const util = require('util')
 const MemoryFS = require('memory-fs')
 const ProgressPlugin = require('webpack/lib/ProgressPlugin')
 
-module.exports = ({ webpack, events, config }) => {
+module.exports = ({ webpack, config }) => {
   
   const { environments, output, client, path, env } = config
 
@@ -17,10 +17,15 @@ module.exports = ({ webpack, events, config }) => {
 
   // apply progress plugin
   compiler.apply(
-    new ProgressPlugin(
-      (percentage, msg) => events.emit('progress', {
-        percentage, msg, type: 'client'
-      })
+    new ProgressPlugin((percentage, msg) =>
+      process.send(
+        {
+          side: 'client',
+          type: 'progress',
+          percentage,
+          msg
+        }
+      )
     )
   )
 
@@ -34,13 +39,7 @@ module.exports = ({ webpack, events, config }) => {
       )
     }
 
-    const files = assets.map(asset => `${asset.name} (${asset.size})`)
-
-    events.emit('status', {
-      type: 'client',
-      msg: files.join('\n')
-    })
-
+    process.exit(0)
   })
 
 }
