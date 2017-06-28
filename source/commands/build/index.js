@@ -1,3 +1,4 @@
+const cluster = require('cluster')
 const ManifestPlugin = require('webpack-assets-manifest')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 
@@ -14,21 +15,39 @@ webpack.ExtractTextPlugin = ExtractTextPlugin
  * @return {void}
  */
 module.exports = (events, config) => {
+
   const { server, client } = config
 
-  if (client) {
-    require('./compilers/client')({
-      webpack,
-      events,
-      config
-    })
-  }
+  if (cluster.isMaster) {
 
-  if (server) {
-    require('./compilers/server')({
-      webpack,
-      events,
-      config
-    })
+    if (server) {
+      cluster
+        .fork({ __name: 'webpack-server' })
+        .on('message', message =>
+          events.emit(message.type, message)
+        )
+    }
+
+    if (client) {
+      cluster
+        .fork({ __name: 'webpack-client' })  
+        .on('message', message =>
+          events.emit(message.type, message)
+        )
+    }
+
+  } else {
+
+    switch(process.env.__name) {
+
+      case 'webpack-client':
+        require('./compilers/client')({ webpack, config })
+      break
+
+      case 'webpack-server':
+        require('./compilers/server')({ webpack, config })
+      break
+
+    }
   }
 }

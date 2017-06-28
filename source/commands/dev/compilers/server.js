@@ -1,10 +1,11 @@
-
-const MemoryFS = require('memory-fs')
+// Depends
+const cluster = require('cluster')
 const ProgressPlugin = require('webpack/lib/ProgressPlugin')
 const createWorker = require('../process/create')
+const MemoryFS = require('memory-fs')
 
-module.exports = ({ webpack, events, config }) => {
-  
+module.exports = ({ webpack, config }) => {
+
   const { environments, output, server, path, env } = config
 
   // get webpack config
@@ -13,29 +14,24 @@ module.exports = ({ webpack, events, config }) => {
     config
   )
 
-  let workers = {
-    main: false,
-    temp: false
-  }
-
-  let mfs = new MemoryFS()
   let compiler = webpack(webpackConfig)
 
+  let fs = new MemoryFS()
   // change filesystem to memory-fs
-  compiler.outputFileSystem = mfs
+  compiler.outputFileSystem = fs
 
-  // apply progress plugin
   compiler.apply(
-    new ProgressPlugin(
-      (percentage, msg) => events.emit('progress', {
-        percentage, msg, type: 'server'
-      })
+    new ProgressPlugin((percentage, msg) =>
+      process.send(
+        {
+          side: 'server',
+          type: 'progress',
+          percentage,
+          msg
+        }
+      )
     )
   )
-
-  // create main worker
-  createWorker(events, config || {})
-    .then( worker => workers.main = worker)
 
   compiler.watch({ poll: true }, (err, statistic) => {
 
@@ -61,38 +57,25 @@ module.exports = ({ webpack, events, config }) => {
 
     // if stacktrace isn't empty show errors
     if (stacktrace.length > 0) {
-      return stacktrace.map(note => {
-        events.emit('error', note)
+      return process.send({
+        side: 'server',
+        type: 'error',
+        note: stacktrace[0]
       })
     }
 
     assets.map(asset => {
-      if (mfs.statSync(`${webpackConfig.output.path}/${asset.name}`).isFile()) {
-        let sourceCode = statistic.compilation.assets[asset.name].source()
 
-        events.emit('status', {
-          type: 'server',
-          msg: `${asset.name}`
+      const filename = `${webpackConfig.output.path}/${asset.name}`
+      if (fs.statSync(filename).isFile()) {
+        let code = statistic.compilation.assets[asset.name].source()
+        process.send({
+          side: 'server',
+          type: 'build',
+          file: filename,
+          code,
+          config
         })
-
-        // process swap magic
-        if (workers.temp) {
-          workers.main.kill('SIGTERM')
-          workers.main.disconnect()
-          workers.main = false
-          workers.main = workers.temp
-        }
-
-        if (workers.main && workers.main.isConnected()) {
-          // send source code to main worker
-          workers.main.send({ name: asset.name, sourceCode }, () => {
-            // and create temporary worker after compiling
-            createWorker(events, config || {})
-              .then(worker => workers.temp = worker)
-          })
-        }
-
-
       }
     })
   })

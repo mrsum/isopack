@@ -14,8 +14,8 @@ const schema = {
  * @param  {[type]} events [description]
  * @return {[type]}        [description]
  */
-module.exports = events => events.on('status', ({ type, msg }) => {
+module.exports = events => events.on('status', ({ side, msg }) => {
   stream.cursorTo(0)
   stream.clearLine(0)
-  stream.write(`${colors.green('[' + type.toUpperCase() + ']:')} \n${msg}\n`)
+  stream.write(`${colors.green('[' + side.toUpperCase() + ']:')} \n${msg}\n`)
 })

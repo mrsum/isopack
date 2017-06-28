@@ -32,29 +32,29 @@ const createBar = (type, width = 40) => {
  * @param  {[type]} events [description]
  * @return {[type]}        [description]
  */
-module.exports = events => events.on('progress', ({ percentage, msg, type }) => {
+module.exports = events => events.on('progress', ({ percentage, msg, type, side }) => {
 
   const percents = Math.round(percentage * 100, 10)
 
   // create new one bar
-  if (percentage === 0 && !bars[type]) {
-    createBar(type)
+  if (percentage === 0 && !bars[side]) {
+    createBar(side)
   }
 
   // if bar was created
-  if(percentage === 0 && bars[type].instance) {
-    bars[type].value = 0
-    bars[type].instance.update(0)
+  if(percentage === 0 && bars[side].instance) {
+    bars[side].value = 0
+    bars[side].instance.update(0)
   }
 
   // any cases
-  if (bars[type]) {
-    bars[type].instance.tick(percents - bars[type].value)
-    bars[type].value = percents
+  if (bars[side]) {
+    bars[side].instance.tick(percents - bars[side].value)
+    bars[side].value = percents
   }
 
   // done
   if (percentage === 100) {
-    bars[type].instance.terminate()
+    bars[side].instance.terminate()
   }
 })

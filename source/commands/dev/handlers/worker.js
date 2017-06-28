@@ -1,3 +1,16 @@
+// Depends
+const vm = require('vm')
+
+// Types
+const consoleTypes = [
+  'log', 'dir', 'warn',
+  'info', 'error', 'trace'
+]
+
+const errorTypes = [
+  'exit', 'error', 'warning',
+  'unhandledRejection', 'rejectionHandled', 'uncaughtException'
+]
 
 /**
  * Send message to master process
@@ -21,33 +34,34 @@ let sendMessage = function (){
  */
 module.exports = () => {
 
+  var console = {}
+
+  // override console context
+  consoleTypes
+    .map(type =>
+      console[type] = sendMessage.bind({ type })
+    )
+
   // error handling subscribe
-  ['exit', 'error', 'warning', 'unhandledRejection', 'rejectionHandled', 'uncaughtException']
+  errorTypes
     .forEach(type => {
       process.on(type, data => {
         sendMessage.bind({ type: 'error' })(data)
       })
     })
 
-  process.on('message', ({ name, sourceCode }) => {
+  // get message with source code
+  process.on('message', ({ file, code }) => {
     try {
-      // depends
-      let vm = require('vm');
-      let console = {};
-
       // prepare new script context for execution
-      let script = new vm.Script(sourceCode, {
-        timeout: 200,
-        filename: name,
+      let script = new vm.Script(code, {
+        timeout: 0,
+        filename: file,
         lineOffset: 5,
         columnOffset: 5,
         displayErrors: true
       });
-
-      // override console context
-      ['log', 'dir', 'warn', 'info', 'error']
-        .forEach(type => console[type] = sendMessage.bind({ type }));
-
+      
       // override stdout functions
       process.stdout.write = sendMessage.bind({ type: 'log' });
 
@@ -64,8 +78,7 @@ module.exports = () => {
       });
 
     } catch (err) {
-      console.error(err)
+      console.error(err.message, err.stack)
     }
-
   })
 }
