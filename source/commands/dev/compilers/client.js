@@ -40,7 +40,10 @@ module.exports = ({ webpack, config }) => {
     contentBase: webpackConfig.output.publicPath || path,
     inline: true,
     quiet: true,
-    hot: true,
+    hot: false,
+    headers: {
+      'Access-Control-Allow-Origin': '*'
+    }
   })
 
   compiler.plugin('done', statistic => {
