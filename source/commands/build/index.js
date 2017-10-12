@@ -9,6 +9,7 @@ let webpack = require('webpack')
 webpack.ManifestPlugin = ManifestPlugin
 webpack.ExtractTextPlugin = ExtractTextPlugin
 
+
 /**
  * @param  {object} events
  * @param  {object} config

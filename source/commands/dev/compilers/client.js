@@ -1,16 +1,15 @@
-
-const DevServer = require('webpack-dev-server');
+const webpack = require('webpack')
+const DevServer = require('webpack-dev-server')
 const ProgressPlugin = require('webpack/lib/ProgressPlugin')
+const ManifestPlugin = require('webpack-assets-manifest')
+const ExtractTextPlugin = require('extract-text-webpack-plugin')
 
-/**
- * Client compiller
- * @param  {[type]} options.webpack [description]
- * @param  {[type]} options.events  [description]
- * @param  {[type]} options.config  [description]
- * @return {[type]}                 [description]
- */
-module.exports = ({ webpack, config }) => {
-  // 
+
+webpack.ManifestPlugin = ManifestPlugin
+webpack.ExtractTextPlugin = ExtractTextPlugin
+
+const compiler = config => {
+
   const { environments, output, client, path, env } = config
 
   // get webpack config
@@ -19,7 +18,7 @@ module.exports = ({ webpack, config }) => {
     config
   )
 
-  const compiler = webpack(webpackConfig);
+  const compiler = webpack(webpackConfig)
 
   // apply progress plugin
   compiler.apply(
@@ -55,17 +54,14 @@ module.exports = ({ webpack, config }) => {
     let stacktrace = []
 
     // check errors
+    // check errors
     if (statistic.hasErrors()) {
-      stacktrace.push(
-        errors.map(error => error)
-      )
+      errors.map(error => stacktrace.push(error))
     }
 
     // check warnings
     if (statistic.hasWarnings()) {
-      stacktrace.push(
-        warnings.map(warning => warning)
-      )
+      warnings.map(warning => stacktrace.push(warning))
     }
 
     // if stacktrace isn't empty show errors
@@ -85,5 +81,9 @@ module.exports = ({ webpack, config }) => {
 
   })
 
-  server.listen(environments.CLIENT_PORT || 8090, 'localhost');
+  server.listen(environments.CLIENT_PORT || 8090, 'localhost')
+
 }
+
+// Execute compiller on message recived
+process.on('message', config => compiler(config))

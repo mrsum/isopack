@@ -22,37 +22,38 @@ const schema = {
  * @param  {[type]} events [description]
  * @return {[type]}        [description]
  */
-module.exports = events => events.on('message', ({ type = 'log', data = []}) => {
+module.exports = events => events.on('message', ({ type = 'log', message = ''}) => {
 
   let template = []
 
-  data.map(message => {
-    switch(Object.prototype.toString.call(message)) {
+  // data.map(message => {
+  //   switch(Object.prototype.toString.call(message)) {
 
-      case '[object Array]':
-      case '[object Number]':
-      case '[object Boolean]':
-        template.push(util.inspect(message) + ', ')
-      break
+  //     case '[object Array]':
+  //     case '[object Number]':
+  //     case '[object Boolean]':
+  //       template.push(util.inspect(message) + ', ')
+  //     break
 
-      case '[object String]':
-        template.push(message + ', ')
-      break
+  //     case '[object String]':
+  //       template.push(message + ', ')
+  //     break
 
-      case '[object Object]':
-        template.push(
-          util.inspect(message, { showHidden: true, depth: 10, colors: true }) + ', '
-        )
-      break
-      default:
-        template.push('NOF' + ', ')
+  //     case '[object Object]':
+  //       template.push(
+  //         util.inspect(message, { showHidden: true, depth: 10, colors: true }) + ', '
+  //       )
+  //     break
+  //     default:
+  //       template.push('NOF' + ', ')
 
-    }
-  })
+  //   }
+  // })
 
 
   stream.write('\n')
   stream.write('  ' + colors[schema[type]](`[${type.toUpperCase()}]: `))
-  template.forEach((item, key) => stream.write(item))
+  stream.write(message);
+  // template.forEach((item, key) => stream.write(item))
   stream.write('\n')
 })

@@ -1,24 +1,21 @@
-// Depends
-const cluster = require('cluster')
+const webpack = require('webpack')
 const ProgressPlugin = require('webpack/lib/ProgressPlugin')
-const createWorker = require('../process/create')
-const MemoryFS = require('memory-fs')
+const ManifestPlugin = require('webpack-assets-manifest')
+const ExtractTextPlugin = require('extract-text-webpack-plugin')
 
-module.exports = ({ webpack, config }) => {
+webpack.ManifestPlugin = ManifestPlugin
+webpack.ExtractTextPlugin = ExtractTextPlugin
 
+const compiler = config => {
+
+  // get config
   const { environments, output, server, path, env } = config
-
-  // get webpack config
   const webpackConfig = require(`${path}/${server.webpack}`)(
     webpack,
     config
   )
 
-  let compiler = webpack(webpackConfig)
-
-  let fs = new MemoryFS()
-  // change filesystem to memory-fs
-  compiler.outputFileSystem = fs
+  const compiler = webpack(webpackConfig)
 
   compiler.apply(
     new ProgressPlugin((percentage, msg) =>
@@ -34,7 +31,6 @@ module.exports = ({ webpack, config }) => {
   )
 
   compiler.watch({ poll: true }, (err, statistic) => {
-
     // get info from statistic
     const { errors, warnings, hash, time, assets } = statistic.toJson()
 
@@ -43,16 +39,12 @@ module.exports = ({ webpack, config }) => {
 
     // check errors
     if (statistic.hasErrors()) {
-      stacktrace.push(
-        errors.map(error => error)
-      )
+      errors.map(error => stacktrace.push(error))
     }
 
     // check warnings
     if (statistic.hasWarnings()) {
-      stacktrace.push(
-        warnings.map(warning => warning)
-      )
+      warnings.map(warning => stacktrace.push(warning))
     }
 
     // if stacktrace isn't empty show errors
@@ -60,23 +52,24 @@ module.exports = ({ webpack, config }) => {
       return process.send({
         side: 'server',
         type: 'error',
-        note: stacktrace[0]
+        message: stacktrace[0]
       })
     }
+  })
 
-    assets.map(asset => {
-
-      const filename = `${webpackConfig.output.path}/${asset.name}`
-      if (fs.statSync(filename).isFile()) {
-        let code = statistic.compilation.assets[asset.name].source()
-        process.send({
-          side: 'server',
-          type: 'build',
-          file: filename,
-          code,
-          config
-        })
-      }
+  compiler.plugin('done', function(compilation) {
+    const { assets } = compilation.toJson();
+    const filename = `${webpackConfig.output.path}/${assets[0].name}`;
+    process.send({
+      side: 'server',
+      type: 'done',
+      filename: filename,
+      config: config,
     })
   })
+
 }
+
+
+// Execute compiller on message recived
+process.on('message', config => compiler(config));

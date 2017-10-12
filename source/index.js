@@ -1,6 +1,4 @@
-
 // Depends
-const cluster = require('cluster')
 const EventEmmiter = require('events')
 
 // All commands
